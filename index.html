@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="nl" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>myArcana — jouw startpagina</title>
+    <meta
+      name="description"
+      content="myArcana is jouw persoonlijke startpagina: al je bookmarks, nieuws, notities en widgets op één plek. Beschikbaar in 21 talen."
+    />
+    <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#14151a" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./favicon.svg" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta property="og:title" content="myArcana — jouw startpagina" />
+    <meta property="og:description" content="Al je bookmarks, nieuws en widgets op één plek. In 21 talen." />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // Resolve the stored theme before first paint so the page never flashes
+      // the wrong colours. Mirrors the logic in src/lib/theme.ts.
+      (function () {
+        try {
+          var raw = localStorage.getItem('myarcana-store');
+          var s = raw ? (JSON.parse(raw).state || {}).settings || {} : {};
+          var mode = s.themeMode || 'system';
+          var dark =
+            mode === 'dark' ||
+            (mode === 'system' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+          if (s.language) document.documentElement.lang = s.language;
+          if (s.language === 'ar' || s.language === 'ur')
+            document.documentElement.dir = 'rtl';
+        } catch (e) {
+          document.documentElement.dataset.theme = window.matchMedia(
+            '(prefers-color-scheme: dark)'
+          ).matches
+            ? 'dark'
+            : 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      myArcana heeft JavaScript nodig. / myArcana requires JavaScript to run.
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

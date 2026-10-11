@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b6cff"/>
+      <stop offset="1" stop-color="#4c2fd6"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="url(#g)"/>
+  <!-- Arcana key: a stylised 'A' over a starburst -->
+  <g fill="none" stroke="#fff" stroke-linecap="round" stroke-width="3.4">
+    <path d="M32 13 L32 21 M32 43 L32 51 M13 32 L21 32 M43 32 L51 32" opacity=".5"/>
+    <path d="M20.5 44 L32 18 L43.5 44" stroke-linejoin="round"/>
+    <path d="M25.3 35.5 H38.7"/>
+  </g>
+</svg>

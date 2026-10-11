@@ -1,0 +1,210 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --f-sans: 'Inter';
+    --r-widget: 10px;
+
+    /* Accent — overwritten at runtime from the chosen accent preset. */
+    --c-accent: 109 74 255;
+    --c-accent-fg: 255 255 255;
+    --c-accent-soft: 238 234 255;
+
+    /* Light surface scale */
+    --c-surface: 255 255 255;
+    --c-surface-raised: 255 255 255;
+    --c-surface-sunken: 244 245 247;
+    --c-ink: 29 31 38;
+    --c-ink-muted: 93 99 115;
+    --c-ink-faint: 141 147 163;
+    --c-line: 226 229 235;
+
+    /* Page backdrop — a colour, gradient or image set by the theme. */
+    --bg-layer: rgb(var(--c-surface-sunken));
+    --bg-size: cover;
+    --bg-pos: center;
+    --bg-blur: 0px;
+    --bg-dim: 0;
+    --widget-alpha: 1;
+  }
+
+  :root[data-theme='dark'] {
+    --c-accent-soft: 44 36 82;
+    --c-surface: 31 33 41;
+    --c-surface-raised: 37 39 48;
+    --c-surface-sunken: 20 21 26;
+    --c-ink: 234 236 242;
+    --c-ink-muted: 157 163 178;
+    --c-ink-faint: 115 121 136;
+    --c-line: 52 55 66;
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-surface-sunken text-ink antialiased;
+    font-family: var(--f-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  /* The backdrop lives on a fixed pseudo-element so blur and dim can be
+     applied without affecting any content above it. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: calc(-1 * var(--bg-blur) * 2);
+    z-index: -2;
+    background: var(--bg-layer);
+    background-size: var(--bg-size);
+    background-position: var(--bg-pos);
+    background-repeat: no-repeat;
+    filter: blur(var(--bg-blur));
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: rgb(0 0 0 / var(--bg-dim));
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-1 ring-offset-surface;
+  }
+
+  ::selection {
+    background: rgb(var(--c-accent) / 0.25);
+  }
+
+  /* Scrollbars that match the theme instead of the OS. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--c-ink-faint) / 0.45) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--c-ink-faint) / 0.4);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--c-ink-faint) / 0.65);
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  [dir='rtl'] .flip-rtl {
+    transform: scaleX(-1);
+  }
+}
+
+@layer components {
+  .widget-card {
+    background: rgb(var(--c-surface) / var(--widget-alpha));
+    @apply rounded-widget shadow-widget backdrop-blur-[2px] transition-shadow;
+  }
+
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-md
+      text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-accent px-3.5 py-2 text-accent-fg hover:brightness-110 active:brightness-95;
+  }
+  .btn-ghost {
+    @apply btn px-3 py-2 text-ink-muted hover:bg-ink/5 hover:text-ink;
+  }
+  .btn-outline {
+    @apply btn border border-line bg-surface px-3.5 py-2 text-ink hover:bg-ink/5;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 px-3.5 py-2 text-white hover:bg-red-700;
+  }
+  .btn-icon {
+    @apply btn h-8 w-8 shrink-0 rounded-md text-ink-muted hover:bg-ink/5 hover:text-ink;
+  }
+
+  .field {
+    @apply w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink
+      placeholder:text-ink-faint focus:border-accent focus:outline-none
+      focus:ring-1 focus:ring-accent;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-muted;
+  }
+
+  .menu-panel {
+    @apply z-50 min-w-[13rem] overflow-hidden rounded-lg border border-line
+      bg-surface-raised p-1 shadow-pop animate-pop-in;
+  }
+  .menu-item {
+    @apply flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm
+      text-ink transition-colors hover:bg-ink/5 disabled:opacity-40;
+  }
+  .menu-sep {
+    @apply my-1 h-px bg-line;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line
+      bg-surface px-2.5 py-1 text-xs font-medium text-ink-muted;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden rounded bg-ink/10;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background: linear-gradient(90deg, transparent, rgb(var(--c-surface) / 0.5), transparent);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .drag-handle {
+    cursor: grab;
+    touch-action: none;
+  }
+  .drag-handle:active {
+    cursor: grabbing;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Never let an embedded widget page escape its frame. */
+iframe {
+  border: 0;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
