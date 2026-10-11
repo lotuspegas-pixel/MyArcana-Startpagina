@@ -108,9 +108,11 @@ De build is volledig statisch: `dist/` kan op elke webserver, CDN of
 static-host.
 
 **GitHub Pages** — de workflow in `.github/workflows/deploy.yml` bouwt en
-publiceert bij elke push naar `main`. Zet Pages in de repo-instellingen op
-"GitHub Actions". De workflow zet `VITE_BASE` automatisch op de naam van de
-repository, zodat de site ook onder een subpad werkt.
+publiceert bij elke push naar `main`. Zet Pages eerst één keer aan:
+**Settings → Pages → Build and deployment → Source: GitHub Actions**. Dat kan
+alleen een mens doen; de workflow-token mag de Pages-site niet zelf aanmaken.
+Daarna zet de workflow `VITE_BASE` automatisch op de naam van de repository,
+zodat de site ook onder een subpad werkt.
 
 **Hostinger of een andere host** — bouw voor de domeinroot en upload de inhoud
 van `dist/` naar `public_html`:

@@ -34,12 +34,10 @@ jobs:
           VITE_BASE: /${{ github.event.repository.name }}/
         run: npm run build
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-        with:
-          # Turns Pages on the first time this runs, so the repository needs
-          # no manual setup before the first deploy.
-          enablement: true
+      # Requires Pages to be switched on once, by hand:
+      # Settings → Pages → Build and deployment → Source: GitHub Actions.
+      # The workflow token is not allowed to create the Pages site itself.
+      - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:

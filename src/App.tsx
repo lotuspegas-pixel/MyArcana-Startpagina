@@ -202,7 +202,16 @@ export default function App() {
         className="mx-auto w-full flex-1 px-3 py-4 sm:px-5"
         style={{ maxWidth }}
       >
-        <PageGrid key={page.id} page={page} editMode={!shared && settings.editMode} />
+        {/* A shared page is someone else's: disabling the fieldset stops
+            typing into notes or ticking tasks that could never be saved,
+            while leaving every bookmark link clickable. */}
+        <fieldset
+          className="m-0 min-w-0 border-0 p-0"
+          disabled={!!shared}
+          aria-label={shared ? t('share.viewing') : undefined}
+        >
+          <PageGrid key={page.id} page={page} editMode={!shared && settings.editMode} />
+        </fieldset>
       </main>
 
       <footer className="mx-auto w-full px-3 pb-4 text-center sm:px-5" style={{ maxWidth }}>
