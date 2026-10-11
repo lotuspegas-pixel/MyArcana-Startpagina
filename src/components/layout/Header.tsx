@@ -1,9 +1,10 @@
 import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Database, Eye, Globe, HelpCircle, Keyboard, LayoutTemplate, Palette, Pencil,
-  Redo2, Settings, Undo2,
+  ChevronDown, Database, Eye, Globe, HelpCircle, Keyboard, LayoutTemplate,
+  MoreHorizontal, Palette, Pencil, Redo2, Settings, Undo2,
 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { SearchBar } from './SearchBar';
 import { PageTabs } from './PageTabs';
 import { Menu, MenuItem, MenuLabel, MenuSeparator } from '../ui/Menu';
@@ -13,7 +14,6 @@ import { setLanguage } from '../../i18n';
 import type { Page } from '../../store/types';
 import { cx } from '../../lib/util';
 import { useTicker } from '../../hooks/useTicker';
-import { useShallow } from 'zustand/react/shallow';
 
 interface Props {
   onOpenSettings: (tab?: string) => void;
@@ -35,16 +35,16 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
   searchRef
 ) {
   const { t, i18n } = useTranslation();
-  const { settings, updateSettings, undo, redo } = useStore(useShallow((s) => ({
-    settings: s.settings,
-    updateSettings: s.updateSettings,
-    undo: s.undo,
-    redo: s.redo,
-  })));
+  const { settings, updateSettings, undo, redo } = useStore(
+    useShallow((s) => ({
+      settings: s.settings,
+      updateSettings: s.updateSettings,
+      undo: s.undo,
+      redo: s.redo,
+    }))
+  );
 
   const now = useTicker(settings.showClockInHeader ? 15000 : 600_000);
-  const compact = settings.compactHeader;
-
   const clock = new Intl.DateTimeFormat(i18n.language, {
     hour: '2-digit',
     minute: '2-digit',
@@ -55,36 +55,39 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
     ? `${t(greetingKey(new Date(now).getHours()))}, ${settings.userName}`
     : t(greetingKey(new Date(now).getHours()));
 
+  const maxWidth = settings.maxWidth ? `${settings.maxWidth}px` : undefined;
+
   return (
-    <header className="sticky top-0 z-40 border-b border-line/70 bg-surface/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 bg-surface-raised/95 backdrop-blur-md">
       <div
-        className="mx-auto flex w-full items-center gap-3 px-3 sm:px-5"
-        style={{
-          maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : undefined,
-          height: compact ? 48 : 56,
-        }}
+        className="mx-auto flex w-full items-center gap-2 px-3 sm:px-5"
+        style={{ maxWidth, height: settings.compactHeader ? 42 : 48 }}
       >
+        {/* The workspace pill doubles as the brand and the way back home. */}
         <a
           href="."
-          className="flex shrink-0 items-center gap-2"
+          className="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/[0.07] py-1 pe-2 ps-1
+            transition-colors hover:bg-ink/[0.12]"
           aria-label={t('app.name')}
         >
-          <img src="./favicon.svg" alt="" className="h-7 w-7 rounded-lg" />
-          <span className="hidden text-base font-semibold tracking-tight text-ink sm:block">
+          <img src="./favicon.svg" alt="" className="h-6 w-6 rounded-full" />
+          <span className="hidden text-[13px] font-semibold tracking-tight text-ink sm:block">
             my<span className="text-accent">Arcana</span>
           </span>
+          <ChevronDown size={13} className="hidden text-ink-faint sm:block" />
         </a>
 
-        {settings.showSearchBar && (
-          <div className="min-w-0 flex-1 md:mx-auto md:max-w-xl">
+        {settings.showSearchBar ? (
+          <div className="min-w-0 flex-1 md:max-w-md">
             <SearchBar ref={searchRef} />
           </div>
+        ) : (
+          <div className="flex-1" />
         )}
-        {!settings.showSearchBar && <div className="flex-1" />}
 
         <div className="flex shrink-0 items-center gap-0.5">
           {settings.showClockInHeader && (
-            <span className="me-1 hidden text-sm font-medium tabular-nums text-ink-muted sm:block">
+            <span className="me-1 hidden text-[13px] font-medium tabular-nums text-ink-muted sm:block">
               {clock}
             </span>
           )}
@@ -92,40 +95,45 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
           {settings.editMode && (
             <>
               <button
-                className="btn-icon hidden sm:grid"
+                className="btn-icon hidden h-8 w-8 sm:grid"
                 onClick={undo}
                 aria-label={t('common.undo')}
                 title={`${t('common.undo')} (⌘Z)`}
               >
-                <Undo2 size={16} />
+                <Undo2 size={15} />
               </button>
               <button
-                className="btn-icon hidden sm:grid"
+                className="btn-icon hidden h-8 w-8 sm:grid"
                 onClick={redo}
                 aria-label={t('common.redo')}
                 title={`${t('common.redo')} (⌘⇧Z)`}
               >
-                <Redo2 size={16} />
+                <Redo2 size={15} />
               </button>
             </>
           )}
 
           <button
             className={cx(
-              'btn-icon',
+              'btn-icon h-8 w-8',
               settings.editMode && 'bg-accent/15 text-accent hover:bg-accent/25'
             )}
             onClick={() => updateSettings({ editMode: !settings.editMode })}
             aria-pressed={settings.editMode}
             title={settings.editMode ? t('nav.viewMode') : t('nav.editMode')}
           >
-            {settings.editMode ? <Pencil size={16} /> : <Eye size={16} />}
+            {settings.editMode ? <Pencil size={15} /> : <Eye size={15} />}
           </button>
 
           <Menu
             trigger={(p) => (
-              <button {...p} className="btn-icon" aria-label={t('common.language')} title={t('common.language')}>
-                <Globe size={16} />
+              <button
+                {...p}
+                className="btn-icon h-8 w-8"
+                aria-label={t('common.language')}
+                title={t('common.language')}
+              >
+                <Globe size={15} />
               </button>
             )}
           >
@@ -149,12 +157,16 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
 
           <Menu
             trigger={(p) => (
-              <button {...p} className="btn-icon" aria-label={t('nav.menu')}>
-                <Settings size={16} />
+              <button {...p} className="btn-icon h-8 w-8" aria-label={t('nav.menu')}>
+                <MoreHorizontal size={16} />
               </button>
             )}
           >
-            <MenuItem icon={<Settings size={15} />} shortcut="," onClick={() => onOpenSettings('general')}>
+            <MenuItem
+              icon={<Settings size={15} />}
+              shortcut=","
+              onClick={() => onOpenSettings('general')}
+            >
               {t('settings.title')}
             </MenuItem>
             <MenuItem icon={<Palette size={15} />} onClick={() => onOpenSettings('appearance')}>
@@ -179,8 +191,8 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
 
       {settings.showPageTabs && (
         <div
-          className="mx-auto flex w-full items-center gap-2 px-3 pb-1.5 sm:px-5"
-          style={{ maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : undefined }}
+          className="mx-auto flex w-full items-center gap-2 px-3 pb-1 sm:px-5"
+          style={{ maxWidth }}
         >
           <PageTabs
             editMode={settings.editMode}
@@ -189,7 +201,7 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
             onPageBackground={onPageBackground}
           />
           {settings.showGreeting && (
-            <span className="ms-auto hidden shrink-0 truncate text-xs text-ink-faint lg:block">
+            <span className="ms-auto hidden shrink-0 truncate text-[11px] text-ink-faint lg:block">
               {greeting}
             </span>
           )}

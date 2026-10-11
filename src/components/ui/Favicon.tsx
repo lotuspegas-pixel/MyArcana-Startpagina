@@ -7,16 +7,22 @@ interface Props {
   title: string;
   /** Explicit icon URL from the bookmark, which wins over the resolver. */
   icon?: string;
-  size?: number;
+  /**
+   * Sizing classes for the box. Kept as classes rather than a number so the
+   * same icon can be touch-sized on a phone and compact on a desktop.
+   */
   className?: string;
+  /** Pixel resolution to request from the resolver. */
+  res?: number;
   rounded?: 'sm' | 'md' | 'full';
 }
 
 /**
  * Shows a site's favicon, walking through the resolver providers on error and
- * finally drawing the title's initials on a colour derived from the host.
+ * finally drawing the title's initials on a colour derived from the host, so
+ * a bookmark is never a blank square.
  */
-export function Favicon({ url, title, icon, size = 20, className, rounded = 'sm' }: Props) {
+export function Favicon({ url, title, icon, className, res = 64, rounded = 'sm' }: Props) {
   const [provider, setProvider] = useState(0);
   const [failed, setFailed] = useState(false);
 
@@ -26,24 +32,19 @@ export function Favicon({ url, title, icon, size = 20, className, rounded = 'sm'
     setFailed(false);
   }, [url, icon]);
 
-  const src = icon || faviconUrl(url, Math.max(32, size * 2), provider);
+  const src = icon || faviconUrl(url, res, provider);
   const radius =
-    rounded === 'full' ? 'rounded-full' : rounded === 'md' ? 'rounded-md' : 'rounded';
+    rounded === 'full' ? 'rounded-full' : rounded === 'md' ? 'rounded-md' : 'rounded-[3px]';
 
   if (!src || failed) {
     return (
       <span
         className={cx(
-          'grid shrink-0 place-items-center font-semibold text-white',
+          'grid shrink-0 place-items-center text-[0.6em] font-semibold leading-none text-white',
           radius,
           className
         )}
-        style={{
-          width: size,
-          height: size,
-          background: colorFromString(url || title),
-          fontSize: Math.max(8, size * 0.42),
-        }}
+        style={{ background: colorFromString(url || title) }}
         aria-hidden
       >
         {initialsOf(title)}
@@ -55,13 +56,10 @@ export function Favicon({ url, title, icon, size = 20, className, rounded = 'sm'
     <img
       src={src}
       alt=""
-      width={size}
-      height={size}
       loading="lazy"
       decoding="async"
       referrerPolicy="no-referrer"
-      className={cx('shrink-0 bg-white/60 object-contain', radius, className)}
-      style={{ width: size, height: size }}
+      className={cx('shrink-0 bg-white/5 object-contain', radius, className)}
       onError={() => {
         if (icon) return setFailed(true);
         if (provider + 1 < faviconProviderCount) setProvider(provider + 1);

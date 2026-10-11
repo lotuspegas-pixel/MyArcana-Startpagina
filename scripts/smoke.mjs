@@ -114,19 +114,43 @@ await check('clock renders a time', async () => {
 });
 await shot('01-start');
 
-console.log('— widget settings live behind the gear —');
+console.log('— card header —');
+const openWidgetSettings = async (title) => {
+  await sectionTitled(title).getByRole('button', { name: /Opties/ }).first().click();
+  await page.waitForTimeout(200);
+  await page.getByRole('menuitem', { name: /Widget-instellingen/ }).click();
+  await page.waitForTimeout(250);
+};
 await check('settings hidden by default', async () =>
   (await sectionTitled('Klok').getByText('Analoge klok').count()) === 0
 );
-await check('gear reveals them', async () => {
-  await sectionTitled('Klok').getByRole('button', { name: /Widget-instellingen/ }).first().click();
-  await page.waitForTimeout(250);
+await check('the menu reveals them', async () => {
+  await openWidgetSettings('Klok');
   return sectionTitled('Klok').getByText('Analoge klok').isVisible();
 });
-await check('gear hides them again', async () => {
-  await sectionTitled('Klok').getByRole('button', { name: /Widget-instellingen/ }).first().click();
-  await page.waitForTimeout(250);
+await check('and hides them again', async () => {
+  await openWidgetSettings('Klok');
   return (await sectionTitled('Klok').getByText('Analoge klok').count()) === 0;
+});
+await check('a bookmark category carries a plus by its title', async () => {
+  const plus = sectionTitled('Favorieten').getByRole('button', { name: /Bookmark toevoegen/ });
+  return (await plus.count()) === 1;
+});
+await check('the plus opens the add dialog', async () => {
+  await sectionTitled('Favorieten')
+    .getByRole('button', { name: /Bookmark toevoegen/ })
+    .first()
+    .click();
+  await page.waitForTimeout(350);
+  const open = await page.getByRole('dialog').isVisible();
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(250);
+  return open;
+});
+await check('every bookmark row shows an icon', async () => {
+  const rows = await sectionTitled('Favorieten').locator('li a').count();
+  const icons = await sectionTitled('Favorieten').locator('li a img, li a span[aria-hidden]').count();
+  return rows > 0 && icons >= rows ? `${icons} icons for ${rows} links` : false;
 });
 
 console.log('— widget library —');
@@ -340,12 +364,37 @@ await check('edits survive a reload', async () =>
   JSON.stringify((await state()).pages).includes('Smoke test taak')
 );
 
-const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'nl-NL' });
+const mobile = await browser.newPage({
+  viewport: { width: 390, height: 844 },
+  locale: 'nl-NL',
+  isMobile: true,
+  hasTouch: true,
+});
 await mobile.goto(BASE, { waitUntil: 'domcontentloaded' });
-await mobile.waitForTimeout(1200);
-await check('no sideways scrolling at 390px', () =>
+await mobile.waitForTimeout(1600);
+await check('the page itself does not scroll sideways at 390px', () =>
   mobile.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)
 );
+const track = mobile.locator('main .no-scrollbar').first();
+await check('columns sit in one swipeable row', async () => {
+  const m = await track.evaluate((el) => ({
+    columns: el.children.length,
+    scrollable: el.scrollWidth > el.clientWidth + 10,
+    firstWidth: (el.firstElementChild).getBoundingClientRect().width,
+    viewport: el.clientWidth,
+  }));
+  if (!m.scrollable || m.columns < 2) return false;
+  // A column takes most of the viewport, leaving the next one peeking in.
+  const share = m.firstWidth / m.viewport;
+  return share > 0.7 && share < 0.95 ? `${m.columns} columns, ${Math.round(share * 100)}% each` : false;
+});
+await check('swiping moves to the next column', async () => {
+  const before = await track.evaluate((el) => el.scrollLeft);
+  await track.evaluate((el) => el.scrollBy({ left: el.clientWidth * 0.86 }));
+  await mobile.waitForTimeout(500);
+  const after = await track.evaluate((el) => el.scrollLeft);
+  return after > before ? `${Math.round(before)} → ${Math.round(after)}px` : false;
+});
 if (SHOTS) await mobile.screenshot({ path: join(SHOTS, '10-mobile.png') });
 await mobile.close();
 

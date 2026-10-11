@@ -2,7 +2,7 @@ import { uid } from '../lib/util';
 import { ACCENTS } from '../lib/theme';
 import type { Bookmark, Column, Page, Settings, Widget, WidgetType } from './types';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 const link = (title: string, url: string, color?: string): Bookmark => ({
   id: uid('bm'),
@@ -25,12 +25,13 @@ export const defaultSettings = (language: string): Settings => ({
   language,
   themeMode: 'system',
   accent: ACCENTS[0].hex,
-  background: { kind: 'color', value: '#f4f5f7', blur: 0, dim: 0 },
+  // 'none' follows the theme's own surface colour, so light and dark both work.
+  background: { kind: 'none', value: '', blur: 0, dim: 0 },
   maxWidth: 1600,
-  columnGap: 16,
+  columnGap: 10,
   widgetOpacity: 1,
   fontScale: 1,
-  radius: 10,
+  radius: 8,
   showSearchBar: true,
   searchEngine: 'google',
   showClockInHeader: false,
@@ -151,8 +152,7 @@ export const makePage = (title: string, columns: Column[], icon = '🏠'): Page 
 /** The page a brand-new visitor lands on. */
 export function starterPages(t: (k: string) => string): Page[] {
   const favourites = makeWidget('bookmarks', t('starter.favourites'), {
-    view: 'tiles',
-    columns: 3,
+    view: 'list',
     bookmarks: [
       link('Google', 'https://www.google.com'),
       link('YouTube', 'https://www.youtube.com'),
@@ -164,7 +164,7 @@ export function starterPages(t: (k: string) => string): Page[] {
       link('Maps', 'https://maps.google.com'),
       link('Drive', 'https://drive.google.com'),
     ],
-  }, { color: '#6d4aff' });
+  });
 
   const social = makeWidget('bookmarks', t('starter.social'), {
     view: 'icons',
@@ -178,7 +178,7 @@ export function starterPages(t: (k: string) => string): Page[] {
       link('TikTok', 'https://www.tiktok.com'),
       link('Discord', 'https://discord.com/app'),
     ],
-  }, { color: '#0ea5e9' });
+  });
 
   const shopping = makeWidget('bookmarks', t('starter.shopping'), {
     view: 'list',
@@ -194,13 +194,13 @@ export function starterPages(t: (k: string) => string): Page[] {
         link('9292', 'https://9292.nl'),
       ]),
     ],
-  }, { color: '#d97706' });
+  });
 
   const news = makeWidget('rss', t('starter.news'), {
     feedUrl: 'https://feeds.nos.nl/nosnieuwsalgemeen',
     feedLimit: 7,
     showImages: true,
-  }, { color: '#dc2626' });
+  });
 
   const todo = makeWidget('todo', t('starter.todo'), {
     todos: [
@@ -208,10 +208,10 @@ export function starterPages(t: (k: string) => string): Page[] {
       { id: uid('td'), text: t('starter.todo2'), done: false, createdAt: Date.now() },
       { id: uid('td'), text: t('starter.todo3'), done: true, createdAt: Date.now() },
     ],
-  }, { color: '#059669' });
+  });
 
   const notes = makeWidget('notes', t('starter.notes'), { text: t('starter.notesBody') });
-  const weather = makeWidget('weather', t('widget.weather'), {}, { color: '#0d9488' });
+  const weather = makeWidget('weather', t('widget.weather'), {});
   const clock = makeWidget('clock', t('widget.clock'), { analog: false });
 
   return [
@@ -235,11 +235,11 @@ export function starterPages(t: (k: string) => string): Page[] {
             link('Trello', 'https://trello.com'),
             link('Figma', 'https://www.figma.com'),
           ],
-        }, { color: '#4f46e5' }),
+        }),
       ]),
-      makeColumn([makeWidget('calendar', t('widget.calendar'), {}, { color: '#2563eb' })]),
+      makeColumn([makeWidget('calendar', t('widget.calendar'), {})]),
       makeColumn([
-        makeWidget('todo', t('starter.projects'), { todos: [] }, { color: '#059669' }),
+        makeWidget('todo', t('starter.projects'), { todos: [] }),
         makeWidget('worldclock', t('widget.worldclock')),
       ]),
     ], '💼'),
@@ -256,7 +256,7 @@ export function starterPages(t: (k: string) => string): Page[] {
             link('Twitch', 'https://www.twitch.tv'),
             link('Videoland', 'https://www.videoland.com'),
           ],
-        }, { color: '#dc2626' }),
+        }),
       ]),
       makeColumn([
         makeWidget('bookmarks', t('starter.listen'), {
@@ -268,9 +268,9 @@ export function starterPages(t: (k: string) => string): Page[] {
             link('Apple Music', 'https://music.apple.com'),
             link('NPO Radio 2', 'https://www.nporadio2.nl'),
           ],
-        }, { color: '#059669' }),
+        }),
       ]),
-      makeColumn([makeWidget('countdown', t('widget.countdown'), {}, { color: '#c026d3' })]),
+      makeColumn([makeWidget('countdown', t('widget.countdown'), {})]),
     ], '🎬'),
   ];
 }

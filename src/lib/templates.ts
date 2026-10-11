@@ -46,17 +46,16 @@ export const TEMPLATES: TemplateMeta[] = [
                   link('Agenda', 'https://calendar.google.com'),
                   link('Drive', 'https://drive.google.com'),
                 ],
-              },
-              { color: '#6d4aff' }
+              }
             ),
           ]),
           makeColumn([
-            makeWidget('rss', t('starter.news'), { feedLimit: 6 }, { color: '#dc2626' }),
+            makeWidget('rss', t('starter.news'), { feedLimit: 6 }),
             makeWidget('notes', t('starter.notes')),
           ]),
           makeColumn([
-            makeWidget('weather', t('widget.weather'), {}, { color: '#0d9488' }),
-            makeWidget('todo', t('starter.todo'), {}, { color: '#059669' }),
+            makeWidget('weather', t('widget.weather'), {}),
+            makeWidget('todo', t('starter.todo'), {}),
             makeWidget('clock', t('widget.clock')),
           ]),
         ],
@@ -86,13 +85,12 @@ export const TEMPLATES: TemplateMeta[] = [
                   link('Figma', 'https://www.figma.com'),
                   link('Drive', 'https://drive.google.com'),
                 ],
-              },
-              { color: '#4f46e5' }
+              }
             ),
           ]),
-          makeColumn([makeWidget('calendar', t('widget.calendar'), {}, { color: '#2563eb' })]),
+          makeColumn([makeWidget('calendar', t('widget.calendar'), {})]),
           makeColumn([
-            makeWidget('todo', t('starter.projects'), {}, { color: '#059669' }),
+            makeWidget('todo', t('starter.projects'), {}),
             makeWidget('worldclock', t('widget.worldclock')),
           ]),
           makeColumn([makeWidget('notes', t('starter.notes'))]),
@@ -121,16 +119,15 @@ export const TEMPLATES: TemplateMeta[] = [
                   link('WolframAlpha', 'https://www.wolframalpha.com'),
                   link('Quizlet', 'https://quizlet.com'),
                 ],
-              },
-              { color: '#0ea5e9' }
+              }
             ),
           ]),
           makeColumn([
-            makeWidget('todo', t('starter.todo'), {}, { color: '#059669' }),
+            makeWidget('todo', t('starter.todo'), {}),
             makeWidget('calendar', t('widget.calendar')),
           ]),
           makeColumn([
-            makeWidget('countdown', t('widget.countdown'), {}, { color: '#c026d3' }),
+            makeWidget('countdown', t('widget.countdown'), {}),
             makeWidget('notes', t('starter.notes')),
             makeWidget('calculator', t('widget.calculator')),
           ]),
@@ -158,8 +155,7 @@ export const TEMPLATES: TemplateMeta[] = [
                   link('Disney+', 'https://www.disneyplus.com'),
                   link('Twitch', 'https://www.twitch.tv'),
                 ],
-              },
-              { color: '#dc2626' }
+              }
             ),
           ]),
           makeColumn([
@@ -175,8 +171,7 @@ export const TEMPLATES: TemplateMeta[] = [
                   link('Apple Music', 'https://music.apple.com'),
                   link('Deezer', 'https://www.deezer.com'),
                 ],
-              },
-              { color: '#059669' }
+              }
             ),
           ]),
           makeColumn([makeWidget('gallery', t('widget.gallery'))]),
@@ -195,29 +190,26 @@ export const TEMPLATES: TemplateMeta[] = [
             makeWidget(
               'rss',
               'NOS',
-              { feedUrl: 'https://feeds.nos.nl/nosnieuwsalgemeen', feedLimit: 8 },
-              { color: '#dc2626' }
+              { feedUrl: 'https://feeds.nos.nl/nosnieuwsalgemeen', feedLimit: 8 }
             ),
           ]),
           makeColumn([
             makeWidget(
               'rss',
               'BBC World',
-              { feedUrl: 'https://feeds.bbci.co.uk/news/world/rss.xml', feedLimit: 8 },
-              { color: '#b91c1c' }
+              { feedUrl: 'https://feeds.bbci.co.uk/news/world/rss.xml', feedLimit: 8 }
             ),
           ]),
           makeColumn([
             makeWidget(
               'rss',
               'The Guardian',
-              { feedUrl: 'https://www.theguardian.com/world/rss', feedLimit: 8 },
-              { color: '#1d4ed8' }
+              { feedUrl: 'https://www.theguardian.com/world/rss', feedLimit: 8 }
             ),
           ]),
           makeColumn([
-            makeWidget('weather', t('widget.weather'), {}, { color: '#0d9488' }),
-            makeWidget('currency', t('widget.currency'), {}, { color: '#ca8a04' }),
+            makeWidget('weather', t('widget.weather'), {}),
+            makeWidget('currency', t('widget.currency'), {}),
           ]),
         ],
         '📰'
@@ -245,20 +237,18 @@ export const TEMPLATES: TemplateMeta[] = [
                   link('Regex101', 'https://regex101.com'),
                   link('Claude', 'https://claude.ai'),
                 ],
-              },
-              { color: '#1f2937' }
+              }
             ),
           ]),
           makeColumn([
             makeWidget(
               'rss',
               'Hacker News',
-              { feedUrl: 'https://hnrss.org/frontpage', feedLimit: 10 },
-              { color: '#ea580c' }
+              { feedUrl: 'https://hnrss.org/frontpage', feedLimit: 10 }
             ),
           ]),
           makeColumn([
-            makeWidget('todo', t('starter.projects'), {}, { color: '#059669' }),
+            makeWidget('todo', t('starter.projects'), {}),
             makeWidget('worldclock', t('widget.worldclock')),
             makeWidget('calculator', t('widget.calculator')),
           ]),

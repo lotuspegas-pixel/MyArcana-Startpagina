@@ -577,6 +577,18 @@ export const useStore = create<Store>()(
     {
       name: STORAGE_KEY,
       version: SCHEMA_VERSION,
+      migrate: (persisted, from) => {
+        const state = persisted as Partial<AppState> | undefined;
+        // v1 stored a fixed light page background, which stayed light after
+        // switching to the dark theme. Hand those visitors the themed one.
+        if (state?.settings && from < 2) {
+          const bg = state.settings.background;
+          if (bg?.kind === 'color' && bg.value?.toLowerCase() === '#f4f5f7') {
+            state.settings.background = { kind: 'none', value: '', blur: 0, dim: 0 };
+          }
+        }
+        return state as AppState;
+      },
       partialize: (s) => ({
         version: s.version,
         pages: s.pages,

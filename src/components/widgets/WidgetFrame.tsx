@@ -1,19 +1,19 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ChevronDown, Copy, GripVertical, MoreVertical, Palette, PanelTopClose,
-  PanelTopOpen, Settings2, Trash2,
+  ChevronDown, Copy, GripVertical, MoreHorizontal, Palette, PanelTopOpen,
+  Plus, Settings2, Trash2,
 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useShallow } from 'zustand/react/shallow';
 import { Menu, MenuItem, MenuLabel, MenuSeparator } from '../ui/Menu';
 import { ColorSwatches } from '../ui/Controls';
 import { WIDGET_COLORS } from '../../lib/theme';
-import { cx, readableOn } from '../../lib/util';
+import { cx } from '../../lib/util';
 import { useStore } from '../../store/useStore';
 import type { Widget } from '../../store/types';
-import { widgetMeta } from './registry';
-import { useShallow } from 'zustand/react/shallow';
+import type { AddHandler } from './WidgetContext';
 
 interface Props {
   widget: Widget;
@@ -21,8 +21,8 @@ interface Props {
   /** Whether the body should show its settings panel. */
   configuring: boolean;
   onToggleConfigure: () => void;
-  /** Extra buttons the widget body contributes to the header. */
-  actions?: ReactNode;
+  /** The body's primary action, drawn as a plus beside the title. */
+  onAdd: AddHandler;
   children: ReactNode;
 }
 
@@ -31,109 +31,95 @@ export function WidgetFrame({
   editMode,
   configuring,
   onToggleConfigure,
-  actions,
+  onAdd,
   children,
 }: Props) {
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
-  const { updateWidget, removeWidget, duplicateWidget, settings } = useStore(useShallow((s) => ({
-    updateWidget: s.updateWidget,
-    removeWidget: s.removeWidget,
-    duplicateWidget: s.duplicateWidget,
-    settings: s.settings,
-  })));
+  const { updateWidget, removeWidget, duplicateWidget, confirmDelete } = useStore(
+    useShallow((s) => ({
+      updateWidget: s.updateWidget,
+      removeWidget: s.removeWidget,
+      duplicateWidget: s.duplicateWidget,
+      confirmDelete: s.settings.confirmDelete,
+    }))
+  );
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: widget.id, data: { kind: 'widget' }, disabled: !editMode });
 
-  const Icon = widgetMeta(widget.type).icon;
-  const tinted = !!widget.color;
-
   const remove = () => {
-    if (settings.confirmDelete && !confirming) return setConfirming(true);
+    if (confirmDelete && !confirming) return setConfirming(true);
     removeWidget(widget.id);
   };
 
   return (
     <section
       ref={setNodeRef}
-      style={{ transform: CSS.Translate.toString(transform), transition }}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        transition,
+        // A chosen colour reads as a hairline above the card rather than a
+        // filled header bar, which is what the real thing looks like.
+        borderTop: widget.color ? `2px solid ${widget.color}` : undefined,
+      }}
       className={cx(
         'widget-card group/widget relative',
-        isDragging && 'z-30 opacity-85 shadow-pop',
-        !isDragging && 'hover:shadow-widget-hover'
+        isDragging && 'z-30 opacity-85 shadow-pop'
       )}
     >
       {!widget.bare && (
-        <header
-          className={cx(
-            'flex items-center gap-1 rounded-t-widget px-2.5 py-2',
-            tinted ? 'text-[rgb(var(--wc-fg))]' : 'border-b border-line text-ink'
-          )}
-          style={
-            tinted
-              ? ({
-                  background: widget.color,
-                  ['--wc-fg' as string]: readableOn(widget.color!),
-                } as React.CSSProperties)
-              : undefined
-          }
-        >
+        <header className="flex items-center gap-1 px-3 pb-1 pt-2.5 md:px-2.5 md:pb-0.5 md:pt-2">
           {editMode && (
             <button
               {...attributes}
               {...listeners}
-              className={cx(
-                'drag-handle -ms-1 grid h-6 w-5 place-items-center rounded opacity-0',
-                'transition-opacity group-hover/widget:opacity-60 hover:!opacity-100',
-                'focus-visible:opacity-100'
-              )}
+              className="drag-handle -ms-1.5 grid h-5 w-4 shrink-0 place-items-center rounded
+                text-ink-faint opacity-0 transition-opacity group-hover/widget:opacity-70
+                hover:!opacity-100 focus-visible:opacity-100"
               aria-label={t('common.moveUp')}
               tabIndex={-1}
             >
-              <GripVertical size={14} />
+              <GripVertical size={13} />
             </button>
           )}
 
-          <Icon size={14} className={cx('shrink-0', tinted ? 'opacity-80' : 'text-ink-faint')} />
-
-          <h2 className="min-w-0 flex-1 truncate text-sm font-semibold">
+          <h2 className="min-w-0 flex-1 truncate">
             {editMode ? (
               <input
                 value={widget.title}
                 onChange={(e) => updateWidget(widget.id, { title: e.target.value })}
-                className="w-full truncate rounded bg-transparent px-1 py-0.5 text-sm font-semibold
-                  outline-none hover:bg-black/5 focus:bg-black/10 dark:hover:bg-white/10"
                 aria-label={t('common.title')}
+                className="w-full truncate rounded bg-transparent px-1 py-0.5 text-sm font-bold
+                  uppercase tracking-wider outline-none hover:bg-ink/5 focus:bg-ink/10
+                  md:text-[11px]"
+                style={{ color: widget.color }}
               />
             ) : (
-              <span className="px-1">{widget.title}</span>
+              <span
+                className="block truncate px-1 py-0.5 text-sm font-bold uppercase tracking-wider
+                  text-ink md:text-[11px]"
+                style={{ color: widget.color }}
+              >
+                {widget.title}
+              </span>
             )}
           </h2>
 
           <div className="flex shrink-0 items-center gap-0.5">
-            {actions}
-            {editMode && (
+            {onAdd && (
               <button
-                className={cx(
-                  'btn-icon h-6 w-6',
-                  configuring && !tinted && 'bg-accent/15 text-accent',
-                  tinted && 'text-current hover:bg-black/10 hover:text-current',
-                  configuring && tinted && 'bg-black/15'
-                )}
-                onClick={onToggleConfigure}
-                aria-pressed={configuring}
-                aria-label={t('widget.settings')}
-                title={t('widget.settings')}
+                className="btn-icon h-7 w-7 md:h-6 md:w-6"
+                onClick={onAdd}
+                aria-label={t('bookmark.add')}
+                title={t('bookmark.add')}
               >
-                <Settings2 size={14} />
+                <Plus size={16} />
               </button>
             )}
+
             <button
-              className={cx(
-                'btn-icon h-6 w-6',
-                tinted && 'text-current hover:bg-black/10 hover:text-current'
-              )}
+              className="btn-icon h-7 w-7 md:h-6 md:w-6"
               onClick={() => updateWidget(widget.id, { collapsed: !widget.collapsed })}
               aria-label={widget.collapsed ? t('common.expand') : t('common.collapse')}
             >
@@ -143,66 +129,70 @@ export function WidgetFrame({
               />
             </button>
 
-            {editMode && (
-              <Menu
-                trigger={(p) => (
-                  <button
-                    {...p}
-                    className={cx(
-                      'btn-icon h-6 w-6',
-                      tinted && 'text-current hover:bg-black/10 hover:text-current'
-                    )}
-                    aria-label={t('common.options')}
+            <Menu
+              trigger={(p) => (
+                <button
+                  {...p}
+                  className={cx(
+                    'btn-icon h-7 w-7 md:h-6 md:w-6',
+                    configuring && 'bg-accent/15 text-accent'
+                  )}
+                  aria-label={t('common.options')}
+                >
+                  <MoreHorizontal size={16} />
+                </button>
+              )}
+            >
+              {editMode ? (
+                <>
+                  <MenuItem icon={<Settings2 size={15} />} onClick={onToggleConfigure}>
+                    {t('widget.settings')}
+                  </MenuItem>
+                  <MenuItem icon={<Copy size={15} />} onClick={() => duplicateWidget(widget.id)}>
+                    {t('common.duplicate')}
+                  </MenuItem>
+                  <MenuItem
+                    icon={<PanelTopOpen size={15} />}
+                    onClick={() => updateWidget(widget.id, { bare: !widget.bare })}
                   >
-                    <MoreVertical size={15} />
-                  </button>
-                )}
-              >
-                <MenuItem icon={<Settings2 size={15} />} onClick={onToggleConfigure}>
-                  {t('widget.settings')}
-                </MenuItem>
+                    {t('widget.hideHeader')}
+                  </MenuItem>
+                  <MenuSeparator />
+                  <MenuLabel>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Palette size={12} /> {t('widget.color')}
+                    </span>
+                  </MenuLabel>
+                  <div className="px-2.5 pb-2 pt-0.5">
+                    <ColorSwatches
+                      colors={WIDGET_COLORS}
+                      value={widget.color}
+                      onChange={(color) => updateWidget(widget.id, { color })}
+                      allowNone
+                      noneLabel={t('widget.noColor')}
+                    />
+                  </div>
+                  <MenuSeparator />
+                  <MenuItem icon={<Trash2 size={15} />} danger onClick={remove}>
+                    {t('widget.delete')}
+                  </MenuItem>
+                </>
+              ) : (
                 <MenuItem
-                  icon={<Copy size={15} />}
-                  onClick={() => duplicateWidget(widget.id)}
+                  icon={<ChevronDown size={15} />}
+                  onClick={() => updateWidget(widget.id, { collapsed: !widget.collapsed })}
                 >
-                  {t('common.duplicate')}
+                  {widget.collapsed ? t('common.expand') : t('common.collapse')}
                 </MenuItem>
-                <MenuItem
-                  icon={widget.bare ? <PanelTopOpen size={15} /> : <PanelTopClose size={15} />}
-                  onClick={() => updateWidget(widget.id, { bare: !widget.bare })}
-                >
-                  {t('widget.hideHeader')}
-                </MenuItem>
-                <MenuSeparator />
-                <MenuLabel>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Palette size={12} /> {t('widget.color')}
-                  </span>
-                </MenuLabel>
-                <div className="px-2.5 pb-2 pt-0.5">
-                  <ColorSwatches
-                    colors={WIDGET_COLORS}
-                    value={widget.color}
-                    onChange={(color) => updateWidget(widget.id, { color })}
-                    allowNone
-                    noneLabel={t('widget.noColor')}
-                  />
-                </div>
-                <MenuSeparator />
-                <MenuItem icon={<Trash2 size={15} />} danger onClick={remove}>
-                  {t('widget.delete')}
-                </MenuItem>
-              </Menu>
-            )}
+              )}
+            </Menu>
           </div>
         </header>
       )}
 
       {confirming && (
-        <div className="border-b border-red-500/30 bg-red-500/5 px-3 py-2.5">
-          <p className="text-xs text-ink">
-            {t('widget.deleteConfirm', { name: widget.title })}
-          </p>
+        <div className="mx-2.5 mb-2 rounded-md border border-red-500/30 bg-red-500/10 p-2.5">
+          <p className="text-xs text-ink">{t('widget.deleteConfirm', { name: widget.title })}</p>
           <div className="mt-2 flex gap-2">
             <button
               className="btn-danger px-2.5 py-1 text-xs"
@@ -210,24 +200,21 @@ export function WidgetFrame({
             >
               {t('common.delete')}
             </button>
-            <button
-              className="btn-ghost px-2.5 py-1 text-xs"
-              onClick={() => setConfirming(false)}
-            >
+            <button className="btn-ghost px-2.5 py-1 text-xs" onClick={() => setConfirming(false)}>
               {t('common.cancel')}
             </button>
           </div>
         </div>
       )}
 
-      {!widget.collapsed && (
-        <div className={cx(widget.bare && 'rounded-widget')}>{children}</div>
-      )}
+      {!widget.collapsed && children}
 
-      {/* A bare widget still needs a way in when editing. */}
+      {/* A bare widget still needs a way in while editing. */}
       {widget.bare && editMode && (
-        <div className="absolute end-1 top-1 flex gap-0.5 opacity-0 transition-opacity
-          group-hover/widget:opacity-100">
+        <div
+          className="absolute end-1 top-1 flex gap-0.5 opacity-0 transition-opacity
+            group-hover/widget:opacity-100"
+        >
           <button
             {...attributes}
             {...listeners}
@@ -240,7 +227,7 @@ export function WidgetFrame({
           <Menu
             trigger={(p) => (
               <button {...p} className="btn-icon h-6 w-6 bg-surface/90 shadow-sm">
-                <MoreVertical size={13} />
+                <MoreHorizontal size={13} />
               </button>
             )}
           >

@@ -114,9 +114,9 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
     <div className={cx('relative', className)}>
       <div
         className={cx(
-          'flex items-center gap-1 rounded-full border border-line bg-surface',
-          'shadow-sm transition-shadow focus-within:border-accent/60 focus-within:shadow-md',
-          big ? 'h-12 pe-2 ps-4' : 'h-9 pe-1.5 ps-3'
+          'flex items-center gap-1 rounded-full bg-ink/[0.07] transition-colors',
+          'focus-within:bg-ink/[0.12] focus-within:ring-1 focus-within:ring-accent/40',
+          big ? 'h-12 pe-2 ps-4' : 'h-8 pe-1 ps-2.5'
         )}
       >
         <Menu
@@ -129,7 +129,7 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
               aria-label={t('search.chooseEngine')}
               title={engine.name}
             >
-              <Favicon url={`https://${engine.host}`} title={engine.name} size={big ? 18 : 15} />
+              <Favicon url={`https://${engine.host}`} title={engine.name} className={big ? 'h-[18px] w-[18px]' : 'h-[15px] w-[15px]'} />
               <ChevronDown size={12} />
             </button>
           )}
@@ -140,7 +140,7 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
               <MenuItem
                 key={e.id}
                 checked={e.id === current}
-                icon={<Favicon url={`https://${e.host}`} title={e.name} size={15} />}
+                icon={<Favicon url={`https://${e.host}`} title={e.name} className="h-[15px] w-[15px]" />}
                 onClick={() => setEngine(e.id)}
               >
                 {e.name}
@@ -189,7 +189,7 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
           className={cx(
             'min-w-0 flex-1 border-0 bg-transparent text-ink outline-none',
             'placeholder:text-ink-faint',
-            big ? 'text-base' : 'text-sm'
+            big ? 'text-base' : 'text-[13px]'
           )}
         />
 
@@ -206,12 +206,12 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
           className={cx(
             'grid shrink-0 place-items-center rounded-full bg-accent text-accent-fg',
             'transition-[filter] hover:brightness-110',
-            big ? 'h-9 w-9' : 'h-7 w-7'
+            big ? 'h-9 w-9' : 'h-6 w-6'
           )}
           onClick={submit}
           aria-label={t('search.submit')}
         >
-          <Search size={big ? 17 : 14} />
+          <Search size={big ? 17 : 13} />
         </button>
       </div>
 
@@ -238,7 +238,7 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
                   active === i + 1 ? 'bg-accent/10' : 'hover:bg-ink/5'
                 )}
               >
-                <Favicon url={hit.bookmark.url} icon={hit.bookmark.icon} title={hit.bookmark.title} size={17} />
+                <Favicon url={hit.bookmark.url} icon={hit.bookmark.icon} title={hit.bookmark.title} className="h-[17px] w-[17px]" />
                 <span className="truncate text-ink">{hit.bookmark.title}</span>
                 <span className="ms-auto shrink-0 truncate text-2xs text-ink-faint">
                   {hit.pageTitle}

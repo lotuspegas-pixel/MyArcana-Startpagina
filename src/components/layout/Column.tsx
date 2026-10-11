@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Minus, MoreVertical, Plus, Trash2 } from 'lucide-react';
+import { Minus, MoreHorizontal, Plus, Trash2 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { Menu, MenuItem, MenuLabel, MenuSeparator } from '../ui/Menu';
 import { WidgetView } from '../widgets/WidgetView';
 import { useStore } from '../../store/useStore';
 import type { Column as ColumnModel } from '../../store/types';
 import { cx } from '../../lib/util';
-import { useShallow } from 'zustand/react/shallow';
 
 interface Props {
   column: ColumnModel;
@@ -19,11 +19,13 @@ interface Props {
 
 export function Column({ column, pageId, editMode, canRemove, onAddWidget }: Props) {
   const { t } = useTranslation();
-  const { setColumnWidth, removeColumn, addColumn } = useStore(useShallow((s) => ({
-    setColumnWidth: s.setColumnWidth,
-    removeColumn: s.removeColumn,
-    addColumn: s.addColumn,
-  })));
+  const { setColumnWidth, removeColumn, addColumn } = useStore(
+    useShallow((s) => ({
+      setColumnWidth: s.setColumnWidth,
+      removeColumn: s.removeColumn,
+      addColumn: s.addColumn,
+    }))
+  );
 
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
@@ -35,11 +37,15 @@ export function Column({ column, pageId, editMode, canRemove, onAddWidget }: Pro
   return (
     <div
       ref={setNodeRef}
+      // The weight only applies once the columns sit side by side; on a phone
+      // each column is a fixed slice of the viewport in a swipeable row.
+      style={{ ['--col-w' as string]: String(column.width) }}
       className={cx(
-        'flex min-w-0 flex-col gap-3 rounded-lg transition-colors',
-        isOver && 'bg-accent/[0.07] outline-dashed outline-1 outline-accent/40'
+        'flex w-[86vw] shrink-0 snap-start flex-col gap-2 rounded-lg transition-colors',
+        'sm:w-[52vw]',
+        'md:w-auto md:shrink md:snap-align-none md:flex-[var(--col-w)_1_0%]',
+        isOver && 'bg-accent/[0.08] outline-dashed outline-1 outline-accent/40'
       )}
-      style={{ flex: `${column.width} 1 0%` }}
     >
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         {column.widgets.map((widget) => (
@@ -50,22 +56,23 @@ export function Column({ column, pageId, editMode, canRemove, onAddWidget }: Pro
       {editMode && (
         <div className="flex items-center gap-1">
           <button
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border
-              border-dashed border-line py-2.5 text-xs font-medium text-ink-faint
-              transition-colors hover:border-accent/60 hover:bg-accent/5 hover:text-accent"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-md border
+              border-dashed border-line py-2 text-xs font-medium text-ink-faint
+              transition-colors hover:border-accent/60 hover:bg-accent/5 hover:text-accent
+              md:py-1.5 md:text-[11px]"
             onClick={() => onAddWidget(column.id)}
           >
-            <Plus size={14} /> {t('column.addWidget')}
+            <Plus size={13} /> {t('column.addWidget')}
           </button>
 
           <Menu
             trigger={(p) => (
               <button
                 {...p}
-                className="btn-icon h-8 w-8 shrink-0 border border-dashed border-line"
+                className="btn-icon h-8 w-8 shrink-0 border border-dashed border-line md:h-7 md:w-7"
                 aria-label={t('page.columns')}
               >
-                <MoreVertical size={14} />
+                <MoreHorizontal size={14} />
               </button>
             )}
           >

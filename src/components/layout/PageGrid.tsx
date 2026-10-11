@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -12,11 +12,14 @@ import {
 } from '@dnd-kit/core';
 import { restrictToWindowEdges } from '@dnd-kit/modifiers';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
+import { useTranslation } from 'react-i18next';
 import { Column } from './Column';
 import { AddWidgetModal } from '../modals/AddWidgetModal';
 import { findBookmark, useStore } from '../../store/useStore';
 import type { Bookmark, Column as ColumnModel, Page, Widget } from '../../store/types';
-import { useShallow } from 'zustand/react/shallow';
+import { cx } from '../../lib/util';
 
 interface Props {
   page: Page;
@@ -41,9 +44,12 @@ function widgetHoldingBookmark(page: Page, bookmarkId: string): Widget | undefin
 }
 
 /** Index of a bookmark within its own list (root or folder children). */
-function bookmarkIndex(list: Bookmark[], id: string): { list: Bookmark[]; index: number; folderId?: string } | null {
+function bookmarkIndex(
+  list: Bookmark[],
+  id: string
+): { index: number; folderId?: string } | null {
   const index = list.findIndex((b) => b.id === id);
-  if (index >= 0) return { list, index };
+  if (index >= 0) return { index };
   for (const b of list) {
     if (!b.children) continue;
     const hit = bookmarkIndex(b.children, id);
@@ -53,24 +59,59 @@ function bookmarkIndex(list: Bookmark[], id: string): { list: Bookmark[]; index:
 }
 
 export function PageGrid({ page, editMode }: Props) {
-  const { moveWidget, moveBookmark, pages } = useStore(useShallow((s) => ({
-    moveWidget: s.moveWidget,
-    moveBookmark: s.moveBookmark,
-    pages: s.pages,
-  })));
+  const { t } = useTranslation();
+  const { moveWidget, moveBookmark, pages } = useStore(
+    useShallow((s) => ({
+      moveWidget: s.moveWidget,
+      moveBookmark: s.moveBookmark,
+      pages: s.pages,
+    }))
+  );
   const [addTo, setAddTo] = useState<string | null>(null);
   const [dragging, setDragging] = useState<{ kind: string; label: string } | null>(null);
 
+  const track = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ left: false, right: false });
+
   const sensors = useSensors(
-    // A small distance keeps a click on a bookmark from starting a drag.
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    // A small distance keeps a tap on a bookmark from starting a drag, and
+    // leaves room for a horizontal swipe through the columns.
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const livePage = useMemo(
-    () => pages.find((p) => p.id === page.id) ?? page,
-    [pages, page]
-  );
+  const livePage = useMemo(() => pages.find((p) => p.id === page.id) ?? page, [pages, page]);
+
+  /* ----------------------------------------------- mobile column carousel */
+
+  const measure = useCallback(() => {
+    const el = track.current;
+    if (!el) return;
+    setEdges({
+      left: el.scrollLeft > 8,
+      right: el.scrollLeft + el.clientWidth < el.scrollWidth - 8,
+    });
+  }, []);
+
+  useEffect(() => {
+    measure();
+    const el = track.current;
+    if (!el) return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [measure, livePage.columns.length]);
+
+  const step = (direction: 1 | -1) => {
+    const el = track.current;
+    if (!el) return;
+    // One column plus its gap, so a tap lands cleanly on the next card.
+    const first = el.firstElementChild as HTMLElement | null;
+    const amount = first ? first.offsetWidth + 16 : el.clientWidth * 0.86;
+    el.scrollBy({ left: direction * amount, behavior: 'smooth' });
+  };
+
+  /* -------------------------------------------------------- drag and drop */
 
   const onDragStart = (event: DragStartEvent) => {
     const kind = String(event.active.data.current?.kind ?? '');
@@ -91,12 +132,11 @@ export function PageGrid({ page, editMode }: Props) {
     const activeKind = active.data.current?.kind;
     const overKind = over.data.current?.kind;
 
-    /* ----------------------------------------------------------- widgets */
     if (activeKind === 'widget') {
       const sourceColumn = columnOf(livePage, String(active.id));
       if (!sourceColumn) return;
 
-      // Dropped straight onto a column (its empty area).
+      // Dropped straight onto a column's empty area.
       if (overKind === 'column') {
         const targetId = String(over.data.current?.columnId);
         if (targetId === sourceColumn.id) return;
@@ -104,7 +144,6 @@ export function PageGrid({ page, editMode }: Props) {
         return;
       }
 
-      // Dropped over another widget: take that widget's slot.
       if (overKind === 'widget') {
         const targetColumn = columnOf(livePage, String(over.id));
         if (!targetColumn) return;
@@ -116,7 +155,6 @@ export function PageGrid({ page, editMode }: Props) {
       return;
     }
 
-    /* --------------------------------------------------------- bookmarks */
     if (activeKind === 'bookmark') {
       const sourceWidgetId = String(active.data.current?.widgetId ?? '');
       if (!sourceWidgetId) return;
@@ -129,13 +167,7 @@ export function PageGrid({ page, editMode }: Props) {
         if (!targetWidget?.config.bookmarks) return;
         const spot = bookmarkIndex(targetWidget.config.bookmarks, String(over.id));
         if (!spot) return;
-        moveBookmark(
-          sourceWidgetId,
-          String(active.id),
-          targetWidgetId,
-          spot.index,
-          spot.folderId
-        );
+        moveBookmark(sourceWidgetId, String(active.id), targetWidgetId, spot.index, spot.folderId);
         return;
       }
 
@@ -150,6 +182,8 @@ export function PageGrid({ page, editMode }: Props) {
     }
   };
 
+  const multiColumn = livePage.columns.length > 1;
+
   return (
     <DndContext
       sensors={sensors}
@@ -159,24 +193,65 @@ export function PageGrid({ page, editMode }: Props) {
       onDragEnd={onDragEnd}
       onDragCancel={() => setDragging(null)}
     >
-      <div className="flex flex-col gap-3 md:flex-row md:items-start"
-        style={{ gap: 'var(--col-gap)' }}>
-        {livePage.columns.map((column) => (
-          <Column
-            key={column.id}
-            column={column}
-            pageId={livePage.id}
-            editMode={editMode}
-            canRemove={livePage.columns.length > 1}
-            onAddWidget={setAddTo}
-          />
-        ))}
+      <div className="relative">
+        <div
+          ref={track}
+          onScroll={measure}
+          // Phones swipe through the columns one at a time with the next one
+          // peeking in; from `md` up they simply sit side by side.
+          className={cx(
+            'no-scrollbar -mx-3 flex snap-x snap-mandatory items-start overflow-x-auto px-3 pb-1',
+            'sm:-mx-5 sm:px-5',
+            'md:mx-0 md:snap-none md:overflow-visible md:px-0'
+          )}
+          style={{ gap: 'var(--col-gap)', scrollPaddingInline: '0.75rem' }}
+        >
+          {livePage.columns.map((column) => (
+            <Column
+              key={column.id}
+              column={column}
+              pageId={livePage.id}
+              editMode={editMode}
+              canRemove={livePage.columns.length > 1}
+              onAddWidget={setAddTo}
+            />
+          ))}
+        </div>
+
+        {multiColumn && (
+          <>
+            <button
+              className={cx(
+                'absolute start-0 top-20 z-20 grid h-12 w-5 place-items-center rounded-e-md',
+                'bg-ink/25 text-white backdrop-blur transition-opacity md:hidden',
+                edges.left ? 'opacity-100' : 'pointer-events-none opacity-0'
+              )}
+              onClick={() => step(-1)}
+              aria-label={t('common.moveLeft')}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              className={cx(
+                'absolute end-0 top-20 z-20 grid h-12 w-5 place-items-center rounded-s-md',
+                'bg-ink/25 text-white backdrop-blur transition-opacity md:hidden',
+                edges.right ? 'opacity-100' : 'pointer-events-none opacity-0'
+              )}
+              onClick={() => step(1)}
+              aria-label={t('common.moveRight')}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </>
+        )}
       </div>
 
       <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(.18,.67,.6,1.22)' }}>
         {dragging && (
-          <div className="pointer-events-none rounded-md bg-accent px-3 py-2 text-sm
-            font-medium text-accent-fg shadow-pop">
+          <div
+            className="pointer-events-none rounded-md bg-accent px-3 py-2 text-sm font-medium
+              text-accent-fg shadow-pop"
+          >
             {dragging.label}
           </div>
         )}

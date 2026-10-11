@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { WidgetFrame } from './WidgetFrame';
+import { RegisterAddContext, type AddHandler } from './WidgetContext';
 import { BookmarksWidget } from './BookmarksWidget';
 import { TodoWidget } from './TodoWidget';
 import { HeadingWidget, HtmlWidget, NotesWidget, QuoteWidget } from './TextWidgets';
@@ -69,14 +70,23 @@ function WidgetBody({ widget, editMode, configuring }: BodyProps) {
 
 export function WidgetView({ widget, editMode }: { widget: Widget; editMode: boolean }) {
   const [configuring, setConfiguring] = useState(false);
+  // Held as a one-element tuple so storing a function in state does not make
+  // React treat it as a lazy initialiser.
+  const [add, setAdd] = useState<[AddHandler]>([null]);
+
+  const register = useCallback((handler: AddHandler) => setAdd([handler]), []);
+
   return (
     <WidgetFrame
       widget={widget}
       editMode={editMode}
       configuring={editMode && configuring}
       onToggleConfigure={() => setConfiguring((v) => !v)}
+      onAdd={add[0]}
     >
-      <WidgetBody widget={widget} editMode={editMode} configuring={editMode && configuring} />
+      <RegisterAddContext.Provider value={register}>
+        <WidgetBody widget={widget} editMode={editMode} configuring={editMode && configuring} />
+      </RegisterAddContext.Provider>
     </WidgetFrame>
   );
 }

@@ -119,7 +119,7 @@ export function BookmarkEditor({
               url={value.url}
               icon={value.icon || undefined}
               title={value.title || '?'}
-              size={32}
+              className="h-8 w-8"
               rounded="md"
             />
             <input
