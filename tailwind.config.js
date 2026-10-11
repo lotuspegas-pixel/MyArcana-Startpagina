@@ -19,10 +19,13 @@ export default {
         },
         ink: {
           DEFAULT: 'rgb(var(--c-ink) / <alpha-value>)',
+          // Card titles sit a notch below the link rows in brightness.
+          title: 'rgb(var(--c-ink-title) / <alpha-value>)',
           muted: 'rgb(var(--c-ink-muted) / <alpha-value>)',
           faint: 'rgb(var(--c-ink-faint) / <alpha-value>)',
         },
         line: 'rgb(var(--c-line) / <alpha-value>)',
+        bar: 'rgb(var(--c-bar) / <alpha-value>)',
       },
       borderRadius: { widget: 'var(--r-widget)' },
       boxShadow: {

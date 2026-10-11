@@ -107,7 +107,7 @@ export function PageGrid({ page, editMode }: Props) {
     if (!el) return;
     // One column plus its gap, so a tap lands cleanly on the next card.
     const first = el.firstElementChild as HTMLElement | null;
-    const amount = first ? first.offsetWidth + 16 : el.clientWidth * 0.86;
+    const amount = first ? first.offsetWidth + 12 : el.clientWidth * 0.9;
     el.scrollBy({ left: direction * amount, behavior: 'smooth' });
   };
 
@@ -200,11 +200,11 @@ export function PageGrid({ page, editMode }: Props) {
           // Phones swipe through the columns one at a time with the next one
           // peeking in; from `md` up they simply sit side by side.
           className={cx(
-            'no-scrollbar -mx-3 flex snap-x snap-mandatory items-start overflow-x-auto px-3 pb-1',
-            'sm:-mx-5 sm:px-5',
+            'no-scrollbar -mx-3 flex snap-x snap-mandatory items-start overflow-x-auto',
+            'px-[5vw] pb-1 sm:-mx-5',
             'md:mx-0 md:snap-none md:overflow-visible md:px-0'
           )}
-          style={{ gap: 'var(--col-gap)', scrollPaddingInline: '0.75rem' }}
+          style={{ gap: 'var(--col-gap)' }}
         >
           {livePage.columns.map((column) => (
             <Column
@@ -222,25 +222,27 @@ export function PageGrid({ page, editMode }: Props) {
           <>
             <button
               className={cx(
-                'absolute start-0 top-20 z-20 grid h-12 w-5 place-items-center rounded-e-md',
-                'bg-ink/25 text-white backdrop-blur transition-opacity md:hidden',
+                'absolute start-0 top-11 z-20 grid h-10 w-6 place-items-center',
+                'text-[#cacdd5] transition-opacity md:hidden',
                 edges.left ? 'opacity-100' : 'pointer-events-none opacity-0'
               )}
+              style={{ filter: 'drop-shadow(0 0 10px rgba(0,0,0,.55))' }}
               onClick={() => step(-1)}
               aria-label={t('common.moveLeft')}
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={22} strokeWidth={1.75} />
             </button>
             <button
               className={cx(
-                'absolute end-0 top-20 z-20 grid h-12 w-5 place-items-center rounded-s-md',
-                'bg-ink/25 text-white backdrop-blur transition-opacity md:hidden',
+                'absolute end-0 top-11 z-20 grid h-10 w-6 place-items-center',
+                'text-[#cacdd5] transition-opacity md:hidden',
                 edges.right ? 'opacity-100' : 'pointer-events-none opacity-0'
               )}
+              style={{ filter: 'drop-shadow(0 0 10px rgba(0,0,0,.55))' }}
               onClick={() => step(1)}
               aria-label={t('common.moveRight')}
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={22} strokeWidth={1.75} />
             </button>
           </>
         )}

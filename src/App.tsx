@@ -214,7 +214,7 @@ export default function App() {
         </fieldset>
       </main>
 
-      <footer className="mx-auto w-full px-3 pb-4 text-center sm:px-5" style={{ maxWidth }}>
+      <footer className="mx-auto hidden w-full px-3 pb-4 text-center sm:px-5 md:block" style={{ maxWidth }}>
         <p className="text-2xs text-ink-faint/80">
           my<span className="font-medium">Arcana</span> · {t('app.tagline')}
         </p>

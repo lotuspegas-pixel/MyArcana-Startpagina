@@ -28,7 +28,7 @@ export const defaultSettings = (language: string): Settings => ({
   // 'none' follows the theme's own surface colour, so light and dark both work.
   background: { kind: 'none', value: '', blur: 0, dim: 0 },
   maxWidth: 1600,
-  columnGap: 10,
+  columnGap: 12,
   widgetOpacity: 1,
   fontScale: 1,
   radius: 8,

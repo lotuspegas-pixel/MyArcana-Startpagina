@@ -127,6 +127,22 @@ npm ci && npm run build
 VITE_BASE=/startpagina/ npm run build
 ```
 
+## Vormgeving
+
+De maatvoering is niet op gevoel gekozen. `docs/reference-measurements.md`
+bevat de opgemeten waarden — kleuren bemonsterd per pixel, rijhoogtes,
+kolombreedtes en de geometrie van de mobiele carrousel — met per getal de
+ruwe pixelwaarde waar het uit volgt. De tokens in `src/index.css` en de
+klassen in `WidgetFrame`, `BookmarksWidget`, `Column` en `PageGrid` volgen
+die tabel.
+
+Kort samengevat: de kaart is een vlak neutraal grijs dat *donkerder* is dan
+de pagina, die zelf een blauwgrijs verloop heeft. Rijen zijn 24px op een
+telefoon en 19px op een desktop, met op beide een favicon van 16px — alleen
+de letters en de rijhoogte schalen mee, de iconen niet. Op een telefoon is
+elke kolom 90vw breed, snapt hij in het midden, piepen de buren er 10px in
+en scrollt elke kolom verticaal op zichzelf.
+
 ## Hoe het in elkaar zit
 
 ```

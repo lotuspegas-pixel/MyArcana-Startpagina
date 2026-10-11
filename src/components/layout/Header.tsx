@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronDown, Database, Eye, Globe, HelpCircle, Keyboard, LayoutTemplate,
-  MoreHorizontal, Palette, Pencil, Redo2, Settings, Undo2,
+  MoreHorizontal, Palette, Pencil, Plus, Redo2, Settings, Undo2,
 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { SearchBar } from './SearchBar';
@@ -35,14 +35,19 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
   searchRef
 ) {
   const { t, i18n } = useTranslation();
-  const { settings, updateSettings, undo, redo } = useStore(
-    useShallow((s) => ({
-      settings: s.settings,
-      updateSettings: s.updateSettings,
-      undo: s.undo,
-      redo: s.redo,
-    }))
-  );
+  const { settings, updateSettings, undo, redo, pages, activePageId, setActivePage, addPage } =
+    useStore(
+      useShallow((s) => ({
+        settings: s.settings,
+        updateSettings: s.updateSettings,
+        undo: s.undo,
+        redo: s.redo,
+        pages: s.pages,
+        activePageId: s.activePageId,
+        setActivePage: s.setActivePage,
+        addPage: s.addPage,
+      }))
+    );
 
   const now = useTicker(settings.showClockInHeader ? 15000 : 600_000);
   const clock = new Intl.DateTimeFormat(i18n.language, {
@@ -58,24 +63,49 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
   const maxWidth = settings.maxWidth ? `${settings.maxWidth}px` : undefined;
 
   return (
-    <header className="sticky top-0 z-40 bg-surface-raised/95 backdrop-blur-md">
+    <header className="sticky top-0 z-40 bg-bar/90 backdrop-blur-md">
       <div
-        className="mx-auto flex w-full items-center gap-2 px-3 sm:px-5"
-        style={{ maxWidth, height: settings.compactHeader ? 42 : 48 }}
+        className="mx-auto flex h-[52px] w-full items-center gap-1.5 px-2 sm:px-4 md:h-[45px]"
+        style={{ maxWidth, ...(settings.compactHeader ? { height: 42 } : null) }}
       >
-        {/* The workspace pill doubles as the brand and the way back home. */}
-        <a
-          href="."
-          className="flex shrink-0 items-center gap-1.5 rounded-full bg-ink/[0.07] py-1 pe-2 ps-1
-            transition-colors hover:bg-ink/[0.12]"
-          aria-label={t('app.name')}
+        {/* The workspace pill is also where a phone switches pages, since the
+            tab row only appears once there is room for it. */}
+        <Menu
+          align="start"
+          trigger={(p) => (
+            <button
+              {...p}
+              className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-ink/[0.12] pe-2
+                ps-1.5 transition-colors hover:bg-ink/[0.18] md:h-8 md:rounded-md"
+              aria-label={t('app.name')}
+            >
+              <img src="./favicon.svg" alt="" className="h-6 w-6 rounded-full" />
+              <span className="text-[15px] font-semibold tracking-tight text-ink md:text-[13px]">
+                my<span className="text-accent">Arcana</span>
+              </span>
+              <ChevronDown size={13} className="text-ink-muted" />
+            </button>
+          )}
         >
-          <img src="./favicon.svg" alt="" className="h-6 w-6 rounded-full" />
-          <span className="hidden text-[13px] font-semibold tracking-tight text-ink sm:block">
-            my<span className="text-accent">Arcana</span>
-          </span>
-          <ChevronDown size={13} className="hidden text-ink-faint sm:block" />
-        </a>
+          <MenuLabel>{t('nav.pages')}</MenuLabel>
+          {pages.map((page) => (
+            <MenuItem
+              key={page.id}
+              checked={page.id === activePageId}
+              icon={<span aria-hidden>{page.icon ?? '📄'}</span>}
+              onClick={() => setActivePage(page.id)}
+            >
+              {page.title}
+            </MenuItem>
+          ))}
+          <MenuSeparator />
+          <MenuItem icon={<Plus size={15} />} onClick={() => addPage(t('page.new'))}>
+            {t('nav.addPage')}
+          </MenuItem>
+          <MenuItem icon={<LayoutTemplate size={15} />} onClick={onOpenTemplates}>
+            {t('template.title')}
+          </MenuItem>
+        </Menu>
 
         {settings.showSearchBar ? (
           <div className="min-w-0 flex-1 md:max-w-md">
@@ -95,7 +125,7 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
           {settings.editMode && (
             <>
               <button
-                className="btn-icon hidden h-8 w-8 sm:grid"
+                className="btn-icon hidden h-9 w-9 sm:grid md:h-8 md:w-8"
                 onClick={undo}
                 aria-label={t('common.undo')}
                 title={`${t('common.undo')} (⌘Z)`}
@@ -103,7 +133,7 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
                 <Undo2 size={15} />
               </button>
               <button
-                className="btn-icon hidden h-8 w-8 sm:grid"
+                className="btn-icon hidden h-9 w-9 sm:grid md:h-8 md:w-8"
                 onClick={redo}
                 aria-label={t('common.redo')}
                 title={`${t('common.redo')} (⌘⇧Z)`}
@@ -115,7 +145,7 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
 
           <button
             className={cx(
-              'btn-icon h-8 w-8',
+              'btn-icon h-9 w-9 md:h-8 md:w-8',
               settings.editMode && 'bg-accent/15 text-accent hover:bg-accent/25'
             )}
             onClick={() => updateSettings({ editMode: !settings.editMode })}
@@ -129,7 +159,7 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
             trigger={(p) => (
               <button
                 {...p}
-                className="btn-icon h-8 w-8"
+                className="btn-icon h-9 w-9 md:h-8 md:w-8"
                 aria-label={t('common.language')}
                 title={t('common.language')}
               >
@@ -157,7 +187,7 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
 
           <Menu
             trigger={(p) => (
-              <button {...p} className="btn-icon h-8 w-8" aria-label={t('nav.menu')}>
+              <button {...p} className="btn-icon h-9 w-9 md:h-8 md:w-8" aria-label={t('nav.menu')}>
                 <MoreHorizontal size={16} />
               </button>
             )}
@@ -191,7 +221,7 @@ export const Header = forwardRef<HTMLInputElement, Props>(function Header(
 
       {settings.showPageTabs && (
         <div
-          className="mx-auto flex w-full items-center gap-2 px-3 pb-1 sm:px-5"
+          className="mx-auto hidden w-full items-center gap-2 px-3 pb-1 sm:px-5 md:flex"
           style={{ maxWidth }}
         >
           <PageTabs

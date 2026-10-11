@@ -91,7 +91,9 @@ function backgroundLayer(bg: Background): string {
     case 'image':
       return `url("${bg.value.replace(/"/g, '%22')}")`;
     default:
-      return 'rgb(var(--c-surface-sunken))';
+      // Falls through to the per-theme default, so dark mode keeps its
+      // own backdrop instead of inheriting a light one.
+      return 'var(--bg-default)';
   }
 }
 

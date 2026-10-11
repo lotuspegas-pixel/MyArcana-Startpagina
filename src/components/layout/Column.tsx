@@ -41,9 +41,13 @@ export function Column({ column, pageId, editMode, canRemove, onAddWidget }: Pro
       // each column is a fixed slice of the viewport in a swipeable row.
       style={{ ['--col-w' as string]: String(column.width) }}
       className={cx(
-        'flex w-[86vw] shrink-0 snap-start flex-col gap-2 rounded-lg transition-colors',
+        // A phone shows one 90vw column at a time, scrolls it on its own, and
+        // lets both neighbours peek in by about 10 px.
+        'flex w-[90vw] shrink-0 snap-center flex-col gap-3 rounded-lg transition-colors',
+        'max-h-[calc(100dvh-5.5rem)] overflow-y-auto overscroll-contain',
         'sm:w-[52vw]',
-        'md:w-auto md:shrink md:snap-align-none md:flex-[var(--col-w)_1_0%]',
+        'md:max-h-none md:w-auto md:shrink md:snap-align-none md:overflow-visible',
+        'md:flex-[var(--col-w)_1_0%]',
         isOver && 'bg-accent/[0.08] outline-dashed outline-1 outline-accent/40'
       )}
     >

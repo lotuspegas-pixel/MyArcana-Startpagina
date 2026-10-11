@@ -69,7 +69,7 @@ export function WidgetFrame({
       )}
     >
       {!widget.bare && (
-        <header className="flex items-center gap-1 px-3 pb-1 pt-2.5 md:px-2.5 md:pb-0.5 md:pt-2">
+        <header className="flex items-center gap-1 px-3 pb-2.5 pt-3 md:px-2 md:pb-2 md:pt-2">
           {editMode && (
             <button
               {...attributes}
@@ -90,15 +90,15 @@ export function WidgetFrame({
                 value={widget.title}
                 onChange={(e) => updateWidget(widget.id, { title: e.target.value })}
                 aria-label={t('common.title')}
-                className="w-full truncate rounded bg-transparent px-1 py-0.5 text-sm font-bold
-                  uppercase tracking-wider outline-none hover:bg-ink/5 focus:bg-ink/10
-                  md:text-[11px]"
+                className="w-full truncate rounded bg-transparent px-1 py-0 text-[16px]
+                  font-bold uppercase leading-tight tracking-normal text-ink-title outline-none
+                  hover:bg-ink/5 focus:bg-ink/10 md:text-[15px]"
                 style={{ color: widget.color }}
               />
             ) : (
               <span
-                className="block truncate px-1 py-0.5 text-sm font-bold uppercase tracking-wider
-                  text-ink md:text-[11px]"
+                className="block truncate px-1 py-0 text-[16px] font-bold uppercase leading-tight
+                  tracking-normal text-ink-title md:text-[15px]"
                 style={{ color: widget.color }}
               >
                 {widget.title}
@@ -118,23 +118,12 @@ export function WidgetFrame({
               </button>
             )}
 
-            <button
-              className="btn-icon h-7 w-7 md:h-6 md:w-6"
-              onClick={() => updateWidget(widget.id, { collapsed: !widget.collapsed })}
-              aria-label={widget.collapsed ? t('common.expand') : t('common.collapse')}
-            >
-              <ChevronDown
-                size={15}
-                className={cx('transition-transform', widget.collapsed && '-rotate-90')}
-              />
-            </button>
-
             <Menu
               trigger={(p) => (
                 <button
                   {...p}
                   className={cx(
-                    'btn-icon h-7 w-7 md:h-6 md:w-6',
+                    'btn-icon h-7 w-7 text-ink-muted md:h-6 md:w-6',
                     configuring && 'bg-accent/15 text-accent'
                   )}
                   aria-label={t('common.options')}
@@ -143,8 +132,20 @@ export function WidgetFrame({
                 </button>
               )}
             >
-              {editMode ? (
+              <MenuItem
+                icon={
+                  <ChevronDown
+                    size={15}
+                    className={cx('transition-transform', widget.collapsed && '-rotate-90')}
+                  />
+                }
+                onClick={() => updateWidget(widget.id, { collapsed: !widget.collapsed })}
+              >
+                {widget.collapsed ? t('common.expand') : t('common.collapse')}
+              </MenuItem>
+              {editMode && (
                 <>
+                  <MenuSeparator />
                   <MenuItem icon={<Settings2 size={15} />} onClick={onToggleConfigure}>
                     {t('widget.settings')}
                   </MenuItem>
@@ -177,13 +178,6 @@ export function WidgetFrame({
                     {t('widget.delete')}
                   </MenuItem>
                 </>
-              ) : (
-                <MenuItem
-                  icon={<ChevronDown size={15} />}
-                  onClick={() => updateWidget(widget.id, { collapsed: !widget.collapsed })}
-                >
-                  {widget.collapsed ? t('common.expand') : t('common.collapse')}
-                </MenuItem>
               )}
             </Menu>
           </div>

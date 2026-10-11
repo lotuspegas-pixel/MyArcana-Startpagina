@@ -119,7 +119,7 @@ export function BookmarksWidget({ widget, editMode, configuring }: Props) {
 
   return (
     <>
-      <div className={cx('px-2 pb-2 md:px-1.5 md:pb-1.5', widget.bare && 'pt-2')}>
+      <div className={cx('px-2 pb-3 md:px-1.5 md:pb-2', widget.bare && 'pt-2')}>
         {configuring && (
           <div className="mb-2 space-y-2 rounded-md bg-ink/[0.06] p-2">
             <SegmentedControl<BookmarkView>
@@ -209,9 +209,9 @@ export function BookmarksWidget({ widget, editMode, configuring }: Props) {
 
         {!items.length ? (
           <button
-            className="flex w-full items-center gap-2 rounded px-1.5 py-2 text-start text-[15px]
-              text-ink-faint transition-colors hover:bg-ink/5 hover:text-accent md:py-1.5
-              md:text-[13px]"
+            className="flex w-full items-center gap-[7px] rounded px-1 py-1 text-start
+              text-[15px] text-ink-faint transition-colors hover:bg-ink/5 hover:text-accent
+              md:gap-1.5 md:px-[2px] md:text-[13px]"
             onClick={() => setDraft(emptyDraft('link'))}
           >
             <Plus size={16} className="shrink-0" />
@@ -327,11 +327,11 @@ function ListRow(props: RowProps) {
   });
   const updateBookmark = useStore((s) => s.updateBookmark);
 
-  // Touch targets stay comfortable on a phone and tighten up on a desktop,
-  // where start.me fits roughly twice as many rows in the same height.
-  const rowText = compact ? 'text-[14px] md:text-[12px]' : 'text-[15px] md:text-[13px]';
-  const rowPad = compact ? 'py-1 md:py-px' : 'py-1.5 md:py-[3px]';
-  const iconBox = compact ? 'h-5 w-5 md:h-[14px] md:w-[14px]' : 'h-6 w-6 md:h-4 md:w-4';
+  // Rows are 24 px on a phone and 19 px on a desktop, while the favicon stays
+  // 16 px on both — only the type and the row height scale up.
+  const rowText = compact ? 'text-[13px] md:text-[12px]' : 'text-[15px] md:text-[13px]';
+  const rowHeight = compact ? 'h-5 md:h-4' : 'h-6 md:h-[19px]';
+  const iconBox = compact ? 'h-[14px] w-[14px]' : 'h-4 w-4';
 
   if (bm.kind === 'folder') {
     const open = !bm.collapsed;
@@ -341,9 +341,12 @@ function ListRow(props: RowProps) {
         style={{ transform: CSS.Translate.toString(transform), transition }}
         className={cx(isDragging && 'opacity-60')}
       >
-        <div className="group/row flex items-center gap-1 rounded px-1.5 hover:bg-ink/[0.07]">
+        <div className="group/row flex items-center gap-1 rounded px-1 hover:bg-ink/[0.07] md:px-[2px]">
           <button
-            className={cx('flex min-w-0 flex-1 items-center gap-2 text-start md:gap-1.5', rowPad)}
+            className={cx(
+              'flex min-w-0 flex-1 items-center gap-[7px] text-start md:gap-1.5',
+              rowHeight
+            )}
             onClick={() => updateBookmark(props.widgetId, bm.id, { collapsed: open })}
           >
             <ChevronRight
@@ -377,7 +380,7 @@ function ListRow(props: RowProps) {
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cx(isDragging && 'opacity-60')}
     >
-      <div className="group/row flex items-center gap-1 rounded hover:bg-ink/[0.07]">
+      <div className="group/row flex items-center gap-1 rounded px-1 hover:bg-ink/[0.07] md:px-[2px]">
         <a
           href={bm.url}
           target={target}
@@ -385,13 +388,13 @@ function ListRow(props: RowProps) {
           title={bm.note || bm.url}
           onClick={() => onOpen(bm)}
           className={cx(
-            'flex min-w-0 flex-1 items-center gap-2.5 px-1.5 text-ink md:gap-2',
-            rowPad,
+            'flex min-w-0 flex-1 items-center gap-[7px] text-ink md:gap-1.5',
+            rowHeight,
             rowText
           )}
         >
           {showFavicons ? (
-            <Favicon url={bm.url} icon={bm.icon} title={bm.title} className={iconBox} res={64} />
+            <Favicon url={bm.url} icon={bm.icon} title={bm.title} className={iconBox} res={32} />
           ) : (
             <span
               className="h-1.5 w-1.5 shrink-0 rounded-full bg-ink-faint"

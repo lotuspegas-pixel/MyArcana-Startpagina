@@ -114,9 +114,9 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
     <div className={cx('relative', className)}>
       <div
         className={cx(
-          'flex items-center gap-1 rounded-full bg-ink/[0.07] transition-colors',
-          'focus-within:bg-ink/[0.12] focus-within:ring-1 focus-within:ring-accent/40',
-          big ? 'h-12 pe-2 ps-4' : 'h-8 pe-1 ps-2.5'
+          'flex items-center gap-1 rounded-lg bg-ink/[0.12] transition-colors md:rounded-md',
+          'focus-within:bg-ink/[0.2] focus-within:ring-1 focus-within:ring-accent/40',
+          big ? 'h-12 pe-2 ps-4' : 'h-9 pe-1 ps-2.5 md:h-8'
         )}
       >
         <Menu
@@ -156,7 +156,7 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
           enterKeyHint="search"
           autoComplete="off"
           spellCheck={false}
-          placeholder={t('search.placeholder')}
+          placeholder={big ? t('search.placeholder') : t('common.search')}
           aria-label={t('common.search')}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -189,7 +189,7 @@ export const SearchBar = forwardRef<HTMLInputElement, Props>(function SearchBar(
           className={cx(
             'min-w-0 flex-1 border-0 bg-transparent text-ink outline-none',
             'placeholder:text-ink-faint',
-            big ? 'text-base' : 'text-[13px]'
+            big ? 'text-base' : 'text-[15px] md:text-[13px]'
           )}
         />
 

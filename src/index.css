@@ -5,7 +5,9 @@
 @layer base {
   :root {
     --f-sans: 'Inter';
-    --r-widget: 10px;
+    --r-widget: 8px;
+    /* Corners are much softer on a phone than on a desktop. */
+    --r-card: var(--r-widget);
 
     /* Accent — overwritten at runtime from the chosen accent preset. */
     --c-accent: 109 74 255;
@@ -15,14 +17,18 @@
     /* Light surface scale */
     --c-surface: 255 255 255;
     --c-surface-raised: 255 255 255;
-    --c-surface-sunken: 244 245 247;
-    --c-ink: 29 31 38;
+    --c-surface-sunken: 232 236 241;
+    --c-ink: 25 28 33;
+    --c-ink-title: 58 63 72;
     --c-ink-muted: 93 99 115;
     --c-ink-faint: 141 147 163;
-    --c-line: 226 229 235;
+    --c-line: 223 227 233;
+    --c-bar: 255 255 255;
+    /* The page behind the cards when no background is chosen. */
+    --bg-default: rgb(var(--c-surface-sunken));
 
     /* Page backdrop — a colour, gradient or image set by the theme. */
-    --bg-layer: rgb(var(--c-surface-sunken));
+    --bg-layer: var(--bg-default);
     --bg-size: cover;
     --bg-pos: center;
     --bg-blur: 0px;
@@ -30,15 +36,21 @@
     --widget-alpha: 1;
   }
 
+  /* Measured off the reference: the card is a flat neutral grey that sits
+     DARKER than the page, which is a mid blue-grey gradient. Getting that
+     relationship the wrong way round is what made the first pass look off. */
   :root[data-theme='dark'] {
     --c-accent-soft: 44 36 82;
-    --c-surface: 31 33 41;
-    --c-surface-raised: 37 39 48;
-    --c-surface-sunken: 20 21 26;
-    --c-ink: 234 236 242;
-    --c-ink-muted: 157 163 178;
-    --c-ink-faint: 115 121 136;
-    --c-line: 52 55 66;
+    --c-surface: 69 71 73;
+    --c-surface-raised: 77 79 81;
+    --c-surface-sunken: 82 94 106;
+    --c-ink: 255 255 255;
+    --c-ink-title: 232 232 232;
+    --c-ink-muted: 199 199 200;
+    --c-ink-faint: 157 160 164;
+    --c-line: 92 94 97;
+    --c-bar: 28 32 34;
+    --bg-default: linear-gradient(180deg, #3c4750 0%, #607181 100%);
   }
 
   * {
@@ -112,6 +124,12 @@
     background: transparent;
   }
 
+  @media (min-width: 768px) {
+    :root {
+      --r-card: max(2px, calc(var(--r-widget) * 0.4));
+    }
+  }
+
   [dir='rtl'] .flip-rtl {
     transform: scaleX(-1);
   }
@@ -120,7 +138,8 @@
 @layer components {
   .widget-card {
     background: rgb(var(--c-surface) / var(--widget-alpha));
-    @apply rounded-widget shadow-widget backdrop-blur-[2px] transition-shadow;
+    border-radius: var(--r-card);
+    @apply transition-shadow;
   }
 
   .btn {
